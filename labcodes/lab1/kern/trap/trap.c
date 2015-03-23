@@ -49,7 +49,7 @@ idt_init(void) {
     extern uintptr_t __vectors[];
     int i;
     for (i = 0; i < 256; i++)
-        SETGATE(idt[i], 0, GD_KTEXT, __vectors[i], i == T_SWITCH_TOK ? DPL_USER : DPL_KERNEL);
+        SETGATE(idt[i], 0, GD_KTEXT, __vectors[i], i == T_SYSCALL ? DPL_USER : DPL_KERNEL);
     lidt(&idt_pd);
 }
 
