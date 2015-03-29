@@ -9,7 +9,7 @@
    usually split, and the remainder added to the list as another free block.
    Please see Page 196~198, Section 8.2 of Yan Wei Ming's chinese book "Data Structure -- C programming language"
 */
-// LAB2 EXERCISE 1: YOUR CODE
+// LAB2 EXERCISE 1: 2012012017
 // you should rewrite functions: default_init,default_init_memmap,default_alloc_pages, default_free_pages.
 /*
  * Details of FFMA
@@ -64,13 +64,12 @@ default_init(void) {
     list_init(&free_list);
     nr_free = 0;
 }
-struct Page *first_page;
+
 static void
 default_init_memmap(struct Page *base, size_t n) {
-    cprintf("init_memmap(%x, %d)\n", first_page = base, n);
     assert(n > 0);
-    struct Page *p = base;
-    for (; p != base + n; p ++) {
+    struct Page *p;
+    for (p = base; p != base + n; p++) {
         assert(PageReserved(p));
         p->flags = p->property = 0;
         SetPageProperty(p);
@@ -83,7 +82,6 @@ default_init_memmap(struct Page *base, size_t n) {
 
 static struct Page *
 default_alloc_pages(size_t n) {
-    cprintf("allc_pages(%d)\n", n);
     assert(n > 0);
     if (n > nr_free) {
         return NULL;
@@ -114,13 +112,11 @@ default_alloc_pages(size_t n) {
         list_del(&(page->page_link));
         nr_free -= n;
     }
-    cprintf("allc_pages return %x(%d)\n", page, page - first_page);
     return page;
 }
 
 static void
 default_free_pages(struct Page *base, size_t n) {
-    cprintf("free_pages(%d, %d)\n", base - first_page, n);
     assert(n > 0);
 
     struct Page *p = base;
