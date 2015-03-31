@@ -65,21 +65,6 @@ default_init(void) {
     nr_free = 0;
 }
 
-static void
-default_init_memmap(struct Page *base, size_t n) {
-    assert(n > 0);
-    struct Page *p;
-    for (p = base; p != base + n; p++) {
-        assert(PageReserved(p));
-        p->flags = p->property = 0;
-        SetPageProperty(p);
-        set_page_ref(p, 0);
-    }
-    base->property = n;
-    nr_free += n;
-    list_add(&free_list, &(base->page_link));
-}
-
 static struct Page *
 default_alloc_pages(size_t n) {
     assert(n > 0);
@@ -128,17 +113,10 @@ default_free_pages(struct Page *base, size_t n) {
     base->property = n;
 
     list_entry_t *le = list_next(&free_list);
-    int have_added = 0;
-    while (le != &free_list) {
-        if (le2page(le, page_link) > base) {
-            list_add_before(le, &base->page_link);
-            have_added = 1;
+    for (; le != &free_list; le = list_next(le))
+        if (le2page(le, page_link) > base)
             break;
-        }
-        le = list_next(le);
-    }
-    if (have_added == 0)
-        list_add_before(&free_list, &base->page_link);
+    list_add_before(le, &base->page_link);
     le = list_next(&free_list);
     while (le != &free_list) {
         list_entry_t *le_next = list_next(le);
@@ -278,7 +256,7 @@ default_check(void) {
 const struct pmm_manager default_pmm_manager = {
     .name = "default_pmm_manager",
     .init = default_init,
-    .init_memmap = default_init_memmap,
+    .init_memmap = default_free_pages,
     .alloc_pages = default_alloc_pages,
     .free_pages = default_free_pages,
     .nr_free_pages = default_nr_free_pages,
