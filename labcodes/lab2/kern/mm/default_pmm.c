@@ -103,7 +103,6 @@ default_alloc_pages(size_t n) {
 static void
 default_free_pages(struct Page *base, size_t n) {
     assert(n > 0);
-
     struct Page *p = base;
     for (; p != base + n; p ++) {
         p->flags = p->property = 0;
@@ -111,7 +110,6 @@ default_free_pages(struct Page *base, size_t n) {
         set_page_ref(p, 0);
     }
     base->property = n;
-
     list_entry_t *le = list_next(&free_list);
     for (; le != &free_list; le = list_next(le))
         if (le2page(le, page_link) > base)
