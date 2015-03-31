@@ -110,8 +110,8 @@ Breakpoint 1, 0x00007c00 in ?? ()
 > 在上一题基础上，输入`x /10i $pc`，显示
 
 ```
-=> 0x7c00:      cli    
-   0x7c01:      cld    
+=> 0x7c00:      cli
+   0x7c01:      cld
    0x7c02:      xor    %ax,%ax
    0x7c04:      mov    %ax,%ds
    0x7c06:      mov    %ax,%es
@@ -144,9 +144,9 @@ start:
 start:
 .code16                                             # Assemble for 16-bit mode
     cli                                             # Disable interrupts
-    7c00:	fa                   	cli    
+    7c00:	fa                   	cli
     cld                                             # String operations increment
-    7c01:	fc                   	cld    
+    7c01:	fc                   	cld
 
     # Set up the important data segment registers (DS, ES, SS).
     xorw %ax, %ax                                   # Segment number zero
@@ -169,7 +169,7 @@ start:
    │16      int                                                                │
 B+>│17      kern_init(void) {                                                  │
    │18          extern char edata[], end[];                                    │
-   │19          memset(edata, 0, end - edata);    
+   │19          memset(edata, 0, end - edata);                                 │
 ```
 
 > 此时PC值为`PC: 0x100000`，再输入`x /5i $pc`，显示
