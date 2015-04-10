@@ -8,11 +8,11 @@
 
 [练习1.1] 请描述页目录项（Pag Director Entry）和页表（Page Table Entry）中组成部分对ucore实现页替换算法的潜在用处。
 
-> 
+> 用处是定位页面，过滤掉非法访问的页面。
 
 [练习1.2] 如果ucore的缺页服务例程在执行过程中访问内存，出现了页访问异常，请问硬件要做哪些事情？
 
-> 
+> 再次调用缺页服务例程，换入上次出现异常的页面。
 
 ## [练习2] 补充完成基于FIFO的页面替换算法
 
@@ -22,11 +22,15 @@
 - 在ucore中如何判断具有这样特征的页？
 - 何时进行换入和换出操作？
 
-> 
+> 否。现在的框架只有`map_swappable`、`set_unswappable`、`swap_out_victim`三个函数，没有对应于页面访问时触发的函数，因此页面替换算法无法得知页面是否倍访问过。扩展方案：加入一个意为`设置页面被访问`（名似`map_modified`）的函数，约定当页面被访问时调用。
+
+> - 修改位和访问位都是0，而且是“时钟指针”扫过的第一块这样的页。
+> - 修改位可以利用页面的`PTE_D`标记。访问位和“时钟指针”由页面置换算法自行记录，其中访问位利用我往框架里加入的那个函数。
+> - 页缺失时换入并换出。
 
 ## 与参考答案的区别：
 
-> 参考答案[`kern/mm/swap_fifo.c`](../../labcodes_answer/lab3_result/kern/mm/swap_fifo.c)的`_fifo_swap_out_victim`函数里有一句`list_entry_t *le = head->prev;`是错误的。因为在前面的章节中，老师已经强调过，为了适应不同的硬件实现，特意将链表与数据分离。因此，这里不能假定获取head的前一个元素的方法是`head->prev`，而应该使用我的写法`list_entry_t *le = list_prev(head);`，调用[list.h](libs/list.h)中提供的方法。否则，当链表实现与`head->prev`这种写法不兼容时会出严重错误。
+> 参考答案[kern/mm/swap_fifo.c](../../labcodes_answer/lab3_result/kern/mm/swap_fifo.c)的`_fifo_swap_out_victim`函数里有一句`list_entry_t *le = head->prev;`是错误的。因为在前面的章节中，老师已经强调过，为了适应不同的硬件实现，特意将链表与数据分离。因此，这里不能假定获取head的前一个元素的方法是`head->prev`，而应该使用我的写法`list_entry_t *le = list_prev(head);`，调用[list.h](libs/list.h)中提供的方法。否则，当链表实现与`head->prev`这种写法不兼容时会出严重错误。
 
 ## 重要的知识点
 
