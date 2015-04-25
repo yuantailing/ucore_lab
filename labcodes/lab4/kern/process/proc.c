@@ -86,7 +86,7 @@ static struct proc_struct *
 alloc_proc(void) {
     struct proc_struct *proc = kmalloc(sizeof(struct proc_struct));
     if (proc != NULL) {
-    //LAB4:EXERCISE1 YOUR CODE
+    //LAB4:EXERCISE1 2012012017
     /*
      * below fields in proc_struct need to be initialized
      *       enum proc_state state;                      // Process state
@@ -102,6 +102,10 @@ alloc_proc(void) {
      *       uint32_t flags;                             // Process flag
      *       char name[PROC_NAME_LEN + 1];               // Process name
      */
+        memset(proc, 0, sizeof(struct proc_struct));
+        proc->state = PROC_UNINIT;
+        proc->pid = -1;
+        proc->cr3 = boot_cr3;
     }
     return proc;
 }
