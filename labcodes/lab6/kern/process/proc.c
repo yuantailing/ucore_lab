@@ -123,6 +123,7 @@ alloc_proc(void) {
         proc->state = PROC_UNINIT;
         proc->pid = -1;
         proc->cr3 = boot_cr3;
+        list_init(&proc->run_link);
     }
     return proc;
 }
