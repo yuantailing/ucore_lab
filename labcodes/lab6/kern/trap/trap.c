@@ -23,7 +23,7 @@ static void print_ticks() {
     cprintf("%d ticks\n",TICK_NUM);
 #ifdef DEBUG_GRADE
     cprintf("End of Test.\n");
-    // panic("EOT: kernel seems ok.");
+    panic("EOT: kernel seems ok.");
 #endif
 }
 
@@ -234,11 +234,8 @@ trap_dispatch(struct trapframe *tf) {
          * IMPORTANT FUNCTIONS:
 	     * sched_class_proc_tick
          */
-        if (++ticks == TICK_NUM) {
-            print_ticks();
-            ticks = 0;
-            current->need_resched = 1;
-        }
+        ticks++;
+        schedule_tick();
         break;
     case IRQ_OFFSET + IRQ_COM1:
         c = cons_getc();
