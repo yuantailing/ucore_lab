@@ -122,7 +122,7 @@ stride_pick_next(struct run_queue *rq) {
     struct proc_struct *p = 0;
     for (le = list_next(&rq->run_list); le != &rq->run_list; le = list_next(le)) {
         struct proc_struct *q = le2proc(le, run_link);
-        if (!p || (int32_t)(p->lab6_stride - q->lab6_stride) > 0) p = q;
+        if (!p || proc_stride_comp_f(&p->lab6_run_pool, &q->lab6_run_pool) == 1) p = q;
     }
     if (p) p->lab6_stride += BIG_STRIDE / p->lab6_priority;
     return p;
