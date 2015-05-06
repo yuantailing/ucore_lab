@@ -112,22 +112,22 @@ struct sched_class default_sched_class = {
 
 > Exercise 4我一次性用memset将新分配的proc所有成员变量都置为0，因此LAB5中alloc_proc函数不需要更新。参考答案在LAB4是将proc的各个成员变量分别赋值，因此多初始化几个成员变量需要更新代码。
 
-> 我在[kern/schedule/sched.c](kern/schedule/sched.c)里加入一个全局函数schedule_tick来开放sched_class_proc_tick的调用接口，不修改原有代码，更符合面向对象编程原则。
+> - 我在[kern/schedule/sched.c](kern/schedule/sched.c)里加入一个全局函数schedule_tick来开放sched_class_proc_tick的调用接口，不修改原有代码，更符合面向对象编程原则。
 
-> 调度算法的stride_proc_tick函数中，我比参考答案少一次判断。因此每个时钟周期到来时，我的算法都因此比参考答案快一点。
+> - 调度算法的stride_proc_tick函数中，我比参考答案少一次判断。因此每个时钟周期到来时，我的算法都因此比参考答案快一点。
 
-> 如果宏USE_SKEW_HEAP为1，使用斜堆来优化调度算法，那么就没有用到run_list，因此我在stride_init函数里没有调用list_init(&rq->run_list)，比参考答案效率更高。
+> - 如果宏USE_SKEW_HEAP为1，使用斜堆来优化调度算法，那么就没有用到run_list，因此我在stride_init函数里没有调用list_init(&rq->run_list)，比参考答案效率更高。
 
-> 参考答案中，初始化的priority被设置成最大优先级，但我认为应该把它设置成最低优先级（1）。
+> - 参考答案中，初始化的priority被设置成最大优先级，但我认为应该把它设置成最低优先级（1）。
 
-> 不使用斜堆，而使用链表时，可以复用斜堆的比较函数proc_stride_comp_f的代码。这使程序维护方便，也更符合封装原则，减少硬编码（hard-coding）。
+> - 不使用斜堆，而使用链表时，可以复用斜堆的比较函数proc_stride_comp_f的代码。这使程序维护方便，也更符合封装原则，减少硬编码（hard-coding）。
 
 ## 重要的知识点
 
-> Round Robin调度算法；
+> - Round Robin调度算法；
 
-> Stride Scheduling调度算法；
+> - Stride Scheduling调度算法；
 
-> 多级反馈队列调度算法；
+> - 多级反馈队列调度算法；
 
-> 左式堆（斜堆）。//但我认为在调度算法中，堆每次至多合并一个元素，不能体现左式堆的优势，使用普通的完全二叉堆达到的算法效率是一样的。
+> - 左式堆（斜堆）。//但我认为在调度算法中，堆每次至多合并一个元素，不能体现左式堆的优势，使用普通的完全二叉堆达到的算法效率是一样的。
