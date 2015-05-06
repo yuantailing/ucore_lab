@@ -8,7 +8,7 @@
 
 /* You should define the BigStride constant here*/
 /* LAB6: 2012012017 */
-#define BIG_STRIDE 0x8000   /* you should give a value, and is ??? */
+#define BIG_STRIDE 0x7fffffff   /* you should give a value, and is ??? */
 
 /* The compare function for two skew_heap_node_t's and the
  * corresponding procs*/
@@ -70,7 +70,7 @@ stride_enqueue(struct run_queue *rq, struct proc_struct *proc) {
       * (3) set proc->rq pointer to rq
       * (4) increase rq->proc_num
       */
-    list_add_before(&rq->run_list, &proc->run_link);
+    list_add(&rq->run_list, &proc->run_link);
     proc->time_slice = rq->max_time_slice;
     proc->rq = rq;
     if (proc->lab6_priority == 0) proc->lab6_priority = 1;
@@ -93,7 +93,7 @@ stride_dequeue(struct run_queue *rq, struct proc_struct *proc) {
       *         skew_heap_remove: remove a entry from skew_heap
       *         list_del_init: remove a entry from the  list
       */
-    list_del_init(&proc->run_link);
+    list_del(&proc->run_link);
     rq->proc_num--;
 }
 /*
@@ -122,7 +122,7 @@ stride_pick_next(struct run_queue *rq) {
     struct proc_struct *p = 0;
     for (le = list_next(&rq->run_list); le != &rq->run_list; le = list_next(le)) {
         struct proc_struct *q = le2proc(le, run_link);
-        if (!p || p->lab6_stride > q->lab6_stride) p = q;
+        if (!p || (int32_t)(p->lab6_stride - q->lab6_stride) > 0) p = q;
     }
     if (p) p->lab6_stride += BIG_STRIDE / p->lab6_priority;
     return p;
