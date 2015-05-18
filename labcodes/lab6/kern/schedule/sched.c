@@ -98,3 +98,9 @@ schedule(void) {
     }
     local_intr_restore(intr_flag);
 }
+
+int schedule_tick() {
+    sched_class_proc_tick(current);
+    return 0;
+}
+
