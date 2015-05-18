@@ -40,6 +40,7 @@ failed_cleanup:
 /* sysfile_open - open file */
 int
 sysfile_open(const char *__path, uint32_t open_flags) {
+    cprintf("called: sysfile_open(const char *__path, uint32_t open_flags)\n");
     int ret;
     char *path;
     if ((ret = copy_path(&path, __path)) != 0) {

@@ -35,6 +35,7 @@ fd_array_init(struct file *fd_array) {
 // fs_array_alloc - allocate a free file item (with FD_NONE status) in open files table
 static int
 fd_array_alloc(int fd, struct file **file_store) {
+    cprintf("called: ide_read_secs(unsigned short ideno, uint32_t secno, void *dst, size_t nsecs)\n");
 //    panic("debug");
     struct file *file = get_fd_array();
     if (fd == NO_FD) {
@@ -155,6 +156,7 @@ file_testfd(int fd, bool readable, bool writable) {
 // open file
 int
 file_open(char *path, uint32_t open_flags) {
+    cprintf("called: file_open(char *path, uint32_t open_flags)\n");
     bool readable = 0, writable = 0;
     switch (open_flags & O_ACCMODE) {
     case O_RDONLY: readable = 1; break;

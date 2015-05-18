@@ -88,6 +88,7 @@ sys_sleep(uint32_t arg[]) {
 
 static int
 sys_open(uint32_t arg[]) {
+    cprintf("called: sys_open(uint32_t arg[])\n");
     const char *path = (const char *)arg[0];
     uint32_t open_flags = (uint32_t)arg[1];
     return sysfile_open(path, open_flags);
@@ -95,12 +96,14 @@ sys_open(uint32_t arg[]) {
 
 static int
 sys_close(uint32_t arg[]) {
+    cprintf("called: sys_close(uint32_t arg[])\n");
     int fd = (int)arg[0];
     return sysfile_close(fd);
 }
 
 static int
 sys_read(uint32_t arg[]) {
+    cprintf("called: sys_read(uint32_t arg[])\n");
     int fd = (int)arg[0];
     void *base = (void *)arg[1];
     size_t len = (size_t)arg[2];
@@ -109,6 +112,7 @@ sys_read(uint32_t arg[]) {
 
 static int
 sys_write(uint32_t arg[]) {
+    cprintf("called: sys_write(uint32_t arg[])\n");
     int fd = (int)arg[0];
     void *base = (void *)arg[1];
     size_t len = (size_t)arg[2];
@@ -117,6 +121,7 @@ sys_write(uint32_t arg[]) {
 
 static int
 sys_seek(uint32_t arg[]) {
+    cprintf("called: sys_seek(uint32_t arg[])\n");
     int fd = (int)arg[0];
     off_t pos = (off_t)arg[1];
     int whence = (int)arg[2];
@@ -125,6 +130,7 @@ sys_seek(uint32_t arg[]) {
 
 static int
 sys_fstat(uint32_t arg[]) {
+    cprintf("called: sys_fstat(uint32_t arg[])\n");
     int fd = (int)arg[0];
     struct stat *stat = (struct stat *)arg[1];
     return sysfile_fstat(fd, stat);
@@ -132,12 +138,14 @@ sys_fstat(uint32_t arg[]) {
 
 static int
 sys_fsync(uint32_t arg[]) {
+    cprintf("called: sys_fsync(uint32_t arg[])\n");
     int fd = (int)arg[0];
     return sysfile_fsync(fd);
 }
 
 static int
 sys_getcwd(uint32_t arg[]) {
+    cprintf("called: sys_fsync(uint32_t arg[])\n");
     char *buf = (char *)arg[0];
     size_t len = (size_t)arg[1];
     return sysfile_getcwd(buf, len);
@@ -145,6 +153,7 @@ sys_getcwd(uint32_t arg[]) {
 
 static int
 sys_getdirentry(uint32_t arg[]) {
+    cprintf("called: sys_getdirentry(uint32_t arg[])\n");
     int fd = (int)arg[0];
     struct dirent *direntp = (struct dirent *)arg[1];
     return sysfile_getdirentry(fd, direntp);
@@ -152,6 +161,7 @@ sys_getdirentry(uint32_t arg[]) {
 
 static int
 sys_dup(uint32_t arg[]) {
+    cprintf("called: sys_dup(uint32_t arg[])\n");
     int fd1 = (int)arg[0];
     int fd2 = (int)arg[1];
     return sysfile_dup(fd1, fd2);
@@ -186,6 +196,7 @@ static int (*syscalls[])(uint32_t arg[]) = {
 
 void
 syscall(void) {
+    cprintf("called: syscall(void)\n");
     struct trapframe *tf = current->tf;
     uint32_t arg[5];
     int num = tf->tf_regs.reg_eax;
