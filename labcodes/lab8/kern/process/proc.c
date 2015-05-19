@@ -122,12 +122,11 @@ alloc_proc(void) {
      *     uint32_t lab6_stride;                       // FOR LAB6 ONLY: the current stride of the process
      *     uint32_t lab6_priority;                     // FOR LAB6 ONLY: the priority of process, set by lab6_set_priority(uint32_t)
      */
-    //LAB8:EXERCISE2 YOUR CODE HINT:need add some code to init fs in proc_struct, ...
+    //LAB8:EXERCISE2 2012012017 HINT:need add some code to init fs in proc_struct, ...
         memset(proc, 0, sizeof(struct proc_struct));
         proc->state = PROC_UNINIT;
         proc->pid = -1;
         proc->cr3 = boot_cr3;
-        list_init(&proc->run_link);
     }
     return proc;
 }
@@ -433,7 +432,7 @@ do_fork(uint32_t clone_flags, uintptr_t stack, struct trapframe *tf) {
     }
     ret = -E_NO_MEM;
     //LAB4:EXERCISE2 2012012017
-    //LAB8:EXERCISE2 YOUR CODE  HINT:how to copy the fs in parent's proc_struct?
+    //LAB8:EXERCISE2 2012012017  HINT:how to copy the fs in parent's proc_struct?
     /*
      * Some Useful MACROs, Functions and DEFINEs, you can use them in below implementation.
      * MACROs or Functions:
@@ -457,8 +456,8 @@ do_fork(uint32_t clone_flags, uintptr_t stack, struct trapframe *tf) {
     //    2. call setup_kstack to allocate a kernel stack for child process
     if (setup_kstack(proc)) goto bad_fork_cleanup_proc;
     //    3. call copy_mm to dup OR share mm according clone_flag
-    if (copy_files(clone_flags, proc)) goto bad_fork_cleanup_kstack;
     if (copy_mm(clone_flags, proc)) goto bad_fork_cleanup_kstack;
+    if (copy_files(clone_flags, proc)) goto bad_fork_cleanup_fs;
     //    4. call copy_thread to setup tf & context in proc_struct
     copy_thread(proc, stack, tf);
     //    5. insert proc_struct into hash_list && proc_list
