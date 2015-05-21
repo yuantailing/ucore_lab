@@ -149,9 +149,9 @@ static void *slob_alloc(size_t size, gfp_t gfp, int align)
 	}
 }
 
+
 static void slob_free(void *block, int size)
 {
-	//cprintf("%x, %d\n", block, size);
 	slob_t *cur, *b = (slob_t *)block;
 	slob_t *free_at = 0;
 	unsigned long flags;
@@ -170,27 +170,24 @@ static void slob_free(void *block, int size)
 
 	if (b + b->units == cur->next) {
 		b->units += cur->next->units;
-		if (b->units == 512) free_at = b;
+		if (b->units == SLOB_UNITS(PAGE_SIZE)) free_at = b;
 		b->next = cur->next->next;
 	} else
 		b->next = cur->next;
 
 	if (cur + cur->units == b) {
 		cur->units += b->units;
-		if (cur->units == 512) free_at = cur;
+		if (cur->units == SLOB_UNITS(PAGE_SIZE)) free_at = cur;
 		cur->next = b->next;
 	} else
 		cur->next = b;
 
+	slobfree = cur;
 	if (free_at != 0 && size != PAGE_SIZE) {
-		slob_t *prev = slobfree;
-		while (prev->next != free_at)
-			prev = prev->next;
-		prev->next = free_at->next;
+		while (slobfree->next != free_at) slobfree = slobfree->next;
+		slobfree->next = free_at->next;
 		__slob_free_pages(free_at, 0);
 	}
-
-	slobfree = cur;
 
 	spin_unlock_irqrestore(&slob_lock, flags);
 }
