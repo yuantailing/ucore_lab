@@ -589,7 +589,7 @@ sfs_io_nolock(struct sfs_fs *sfs, struct sfs_inode *sin, void *buf, off_t offset
     uint32_t blkno = offset / SFS_BLKSIZE;          // The NO. of Rd/Wr begin block
     uint32_t nblks = endpos / SFS_BLKSIZE - blkno;  // The size of Rd/Wr blocks
 
-  //LAB8:EXERCISE1 YOUR CODE HINT: call sfs_bmap_load_nolock, sfs_rbuf, sfs_rblock,etc. read different kind of blocks in file
+  //LAB8:EXERCISE1 2012012017 HINT: call sfs_bmap_load_nolock, sfs_rbuf, sfs_rblock,etc. read different kind of blocks in file
 	/*
 	 * (1) If offset isn't aligned with the first block, Rd/Wr some content from offset to the end of the first block
 	 *       NOTICE: useful function: sfs_bmap_load_nolock, sfs_buf_op
@@ -599,6 +599,15 @@ sfs_io_nolock(struct sfs_fs *sfs, struct sfs_inode *sin, void *buf, off_t offset
      * (3) If end position isn't aligned with the last block, Rd/Wr some content from begin to the (endpos % SFS_BLKSIZE) of the last block
 	 *       NOTICE: useful function: sfs_bmap_load_nolock, sfs_buf_op	
 	*/
+    while (alen + offset < endpos) {
+        size_t blkend = (blkno + 1) * SFS_BLKSIZE;
+        size = (blkend > endpos) ? (endpos - alen - offset) : (blkend - alen - offset);
+        blkoff = alen + offset - blkend + SFS_BLKSIZE;
+        if (ret = sfs_bmap_load_nolock(sfs, sin, blkno, &ino)) goto out;
+        if (ret = sfs_buf_op(sfs, buf + alen, size, ino, blkoff)) goto out;
+        alen += size;
+        blkno++;
+    }
 out:
     *alenp = alen;
     if (offset + alen > sin->din->size) {
