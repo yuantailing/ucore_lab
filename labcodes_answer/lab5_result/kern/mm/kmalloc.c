@@ -251,16 +251,16 @@ static void *__kmalloc(size_t size, gfp_t gfp)
 }
 
 enum { V_CHECK_SIZE = 1024 };
-void *v_check_ptr[V_CHECK_SIZE];
-size_t v_check_size[V_CHECK_SIZE];
-bool v_check_bool[V_CHECK_SIZE];
-int v_check_top;
+static void *v_check_ptr[V_CHECK_SIZE];
+static size_t v_check_size[V_CHECK_SIZE];
+static bool v_check_bool[V_CHECK_SIZE];
+static int v_check_top;
 
 void *
 kmalloc(size_t size)
 {
   void *p = __kmalloc(size, 0);
-  if (1 || size >= sizeof(struct proc_struct)) cprintf("  kmalloc: %08x, size=%d\n", p, size);
+  // if (1 || size >= sizeof(struct proc_struct)) cprintf("  kmalloc: %08x, size=%d\n", p, size);
   v_check_ptr[v_check_top] = p;
   v_check_size[v_check_top] = size;
   v_check_bool[v_check_top] = 1;
@@ -277,7 +277,7 @@ for (i = 0; i < v_check_top; i++) {
   if (v_check_ptr[i] == block && v_check_bool[i] == 1) {
     v_check_bool[i] = 0;
     found = 1;
-    if (1 || v_check_size[i] >= sizeof(struct proc_struct)) cprintf("  kfree: %08x\n", block);
+    // if (1 || v_check_size[i] >= sizeof(struct proc_struct)) cprintf("  kfree: %08x\n", block);
     break;
   }
 }

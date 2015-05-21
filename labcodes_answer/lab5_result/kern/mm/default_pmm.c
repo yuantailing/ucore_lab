@@ -82,6 +82,12 @@ default_init_memmap(struct Page *base, size_t n) {
     base->property = n;
 }
 
+enum { V_CHECK_SIZE = 1024 };
+static void *v_check_ptr[V_CHECK_SIZE];
+static size_t v_check_size[V_CHECK_SIZE];
+static bool v_check_bool[V_CHECK_SIZE];
+static int v_check_top;
+
 static struct Page *
 default_alloc_pages(size_t n) {
     assert(n > 0);
@@ -109,6 +115,9 @@ default_alloc_pages(size_t n) {
         ClearPageProperty(p);
         SetPageReserved(p);
         nr_free -= n;
+        cprintf("    alloc_pages(%d) => %x\n", n, p);
+        if (p == 0xc01b3894)
+            print_stackframe();
         return p;
       }
     }
@@ -117,6 +126,7 @@ default_alloc_pages(size_t n) {
 
 static void
 default_free_pages(struct Page *base, size_t n) {
+    cprintf("    free_pages(%d) => %x\n", n, base);
     assert(n > 0);
     assert(PageReserved(base));
 
