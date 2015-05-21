@@ -115,9 +115,9 @@ default_alloc_pages(size_t n) {
         ClearPageProperty(p);
         SetPageReserved(p);
         nr_free -= n;
-        cprintf("    alloc_pages(%d) => %x\n", n, p);
-        if (p == 0xc01b3894)
-            print_stackframe();
+        //cprintf("    alloc_pages(%d) => %x\n", n, p);
+        //if (p == 0xc01b3894)
+        //    print_stackframe();
         return p;
       }
     }
@@ -126,7 +126,7 @@ default_alloc_pages(size_t n) {
 
 static void
 default_free_pages(struct Page *base, size_t n) {
-    cprintf("    free_pages(%d) => %x\n", n, base);
+    //cprintf("    free_pages(%d) => %x\n", n, base);
     assert(n > 0);
     assert(PageReserved(base));
 

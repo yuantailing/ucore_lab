@@ -138,11 +138,10 @@ static void *slob_alloc(size_t size, gfp_t gfp, int align)
 
 			if (size == PAGE_SIZE) /* trying to shrink arena? */
 				return 0;
-
 			cur = (slob_t *)__slob_get_free_page(gfp);
 			if (!cur)
 				return 0;
-
+			cprintf("  memory leak possible here!!!\n");
 			slob_free(cur, PAGE_SIZE);
 			spin_lock_irqsave(&slob_lock, flags);
 			cur = slobfree;
@@ -152,7 +151,9 @@ static void *slob_alloc(size_t size, gfp_t gfp, int align)
 
 static void slob_free(void *block, int size)
 {
+	//cprintf("%x, %d\n", block, size);
 	slob_t *cur, *b = (slob_t *)block;
+	slob_t *free_at = 0;
 	unsigned long flags;
 
 	if (!block)
@@ -169,15 +170,25 @@ static void slob_free(void *block, int size)
 
 	if (b + b->units == cur->next) {
 		b->units += cur->next->units;
+		if (b->units == 512) free_at = b;
 		b->next = cur->next->next;
 	} else
 		b->next = cur->next;
 
 	if (cur + cur->units == b) {
 		cur->units += b->units;
+		if (cur->units == 512) free_at = cur;
 		cur->next = b->next;
 	} else
 		cur->next = b;
+
+	if (free_at != 0 && size != PAGE_SIZE) {
+		slob_t *prev = slobfree;
+		while (prev->next != free_at)
+			prev = prev->next;
+		prev->next = free_at->next;
+		__slob_free_pages(free_at, 0);
+	}
 
 	slobfree = cur;
 
