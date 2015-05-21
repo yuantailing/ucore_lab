@@ -33,7 +33,7 @@ struct context {
     uint32_t ebp;
 };
 
-#define PROC_NAME_LEN               15
+#define PROC_NAME_LEN               127
 #define MAX_PROCESS                 4096
 #define MAX_PID                     (MAX_PROCESS * 2)
 
