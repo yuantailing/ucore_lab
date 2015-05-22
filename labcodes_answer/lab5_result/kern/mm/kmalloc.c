@@ -58,6 +58,7 @@ typedef unsigned int gfp_t;
 
 struct slob_block {
 	int units;
+	struct slob_block *page_start;
 	struct slob_block *next;
 };
 typedef struct slob_block slob_t;
@@ -126,6 +127,7 @@ static void *slob_alloc(size_t size, gfp_t gfp, int align)
 				prev->next = cur + units;
 				prev->next->units = cur->units - units;
 				prev->next->next = cur->next;
+				prev->next->page_start = cur->page_start;
 				cur->units = units;
 			}
 
@@ -142,6 +144,7 @@ static void *slob_alloc(size_t size, gfp_t gfp, int align)
 			if (!cur)
 				return 0;
 			cprintf("  memory leak possible here!!!\n");
+			cur->page_start = cur;
 			slob_free(cur, PAGE_SIZE);
 			spin_lock_irqsave(&slob_lock, flags);
 			cur = slobfree;
@@ -168,14 +171,14 @@ static void slob_free(void *block, int size)
 		if (cur >= cur->next && (b > cur || b < cur->next))
 			break;
 
-	if (b + b->units == cur->next) {
+	if (b + b->units == cur->next && b->page_start == cur->next->page_start) {
 		b->units += cur->next->units;
 		if (b->units == SLOB_UNITS(PAGE_SIZE)) free_at = b;
 		b->next = cur->next->next;
 	} else
 		b->next = cur->next;
 
-	if (cur + cur->units == b) {
+	if (cur + cur->units == b && cur->page_start == b->page_start) {
 		cur->units += b->units;
 		if (cur->units == SLOB_UNITS(PAGE_SIZE)) free_at = cur;
 		cur->next = b->next;
