@@ -24,16 +24,12 @@ proc_stride_comp_f(void *a, void *b)
 }
 
 static int
-sched_find_first_bit(uint32_t bitmap[BITMAP_SIZE]) {
-    return 0;
-}
-
-static void
-sched_o1_array_enqueue(struct proc_struct *proc, struct prio_array *arr) {
-    arr->nr_active++;
-    uint32_t priority = proc->lab6_priority;
-    arr->bitmap[priority / sizeof(uint32_t)] |= 1 << (sizeof(uint32_t) - 1 - priority % sizeof(uint32_t));
-    list_add(&arr->queue[priority], &proc->o1_sched_link);
+sched_o1_find_first_bit(uint32_t bitmap[BITMAP_SIZE]) {
+    int priority;
+    for (priority = 0; priority < MAX_PRIO; priority++)
+        if (bitmap[priority / 32] & (1 << 32 - 1 - priority % 32))
+            return priority;
+    return -1;
 }
 
 /*
@@ -94,18 +90,14 @@ stride_enqueue(struct run_queue *rq, struct proc_struct *proc) {
       * (3) set proc->rq pointer to rq
       * (4) increase rq->proc_num
       */
-    proc->time_slice = rq->max_time_slice;
-    proc->rq = rq;
-    sched_o1_array_enqueue(proc, rq->expired);
-#if USE_SKEW_HEAP
-    rq->lab6_run_pool = skew_heap_insert(rq->lab6_run_pool, &(proc->lab6_run_pool), proc_stride_comp_f);
-#else
-    list_add(&rq->run_list, &proc->run_link);
-#endif
+    cprintf("  enqueue pid=%d, priority=%d\n", proc->pid, proc->lab6_priority);
     proc->time_slice = rq->max_time_slice;
     proc->rq = rq;
     if (proc->lab6_priority == 0) proc->lab6_priority = 1;
-    rq->proc_num++;
+    rq->expired->nr_active++;
+    uint32_t priority = proc->lab6_priority;
+    rq->expired->bitmap[priority / 32] |= 1 << (32 - 1 - priority % 32);
+    list_add(&rq->expired->queue[priority], &proc->o1_sched_link);
 }
 
 /*
@@ -124,12 +116,12 @@ stride_dequeue(struct run_queue *rq, struct proc_struct *proc) {
       *         skew_heap_remove: remove a entry from skew_heap
       *         list_del_init: remove a entry from the  list
       */
-#if USE_SKEW_HEAP
-    rq->lab6_run_pool = skew_heap_remove(rq->lab6_run_pool, &(proc->lab6_run_pool), proc_stride_comp_f);
-#else
-    list_del(&proc->run_link);
-#endif
-    rq->proc_num--;
+    cprintf("  dequeue pid=%d, priority=%d\n", proc->pid, proc->lab6_priority);
+    rq->active->nr_active--;
+    uint32_t priority = proc->lab6_priority;
+    list_del(&proc->o1_sched_link);
+    if (list_empty(&rq->active->queue[priority]))
+        rq->active->bitmap[priority / 32] &= ~(1 << (32 - 1 - priority % 32));
 }
 /*
  * stride_pick_next pick the element from the ``run-queue'', with the
@@ -153,19 +145,15 @@ stride_pick_next(struct run_queue *rq) {
       * (2) update p;s stride value: p->lab6_stride
       * (3) return p
       */
-#if USE_SKEW_HEAP
-    if (!rq->lab6_run_pool) return NULL;
-    struct proc_struct *p = le2proc(rq->lab6_run_pool, lab6_run_pool);
-#else
-    list_entry_t *le;
-    struct proc_struct *p = 0;
-    for (le = list_next(&rq->run_list); le != &rq->run_list; le = list_next(le)) {
-        struct proc_struct *q = le2proc(le, run_link);
-        if (!p || proc_stride_comp_f(&p->lab6_run_pool, &q->lab6_run_pool) == 1) p = q;
+    if (rq->active->nr_active == 0) {
+        struct prio_array *t = rq->active;
+        rq->active = rq->expired;
+        rq->expired = t;
     }
-#endif
-    if (p) p->lab6_stride += BIG_STRIDE / p->lab6_priority;
-    return p;
+    int first_bit = sched_o1_find_first_bit(rq->active->bitmap);
+    struct proc_struct *proc = le2proc(list_next(&rq->active->queue[first_bit]), o1_sched_link);
+    cprintf("  picked  pid=%d, priority=%d\n", proc->pid, proc->lab6_priority);
+    return proc;
 }
 
 /*
