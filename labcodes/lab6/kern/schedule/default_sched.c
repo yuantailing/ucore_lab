@@ -4,25 +4,6 @@
 #include <assert.h>
 #include <default_sched.h>
 
-#define USE_SKEW_HEAP 1
-
-/* You should define the BigStride constant here*/
-/* LAB6: 2012012017 */
-#define BIG_STRIDE 0x7fffffff   /* you should give a value, and is ??? */
-
-/* The compare function for two skew_heap_node_t's and the
- * corresponding procs*/
-static int
-proc_stride_comp_f(void *a, void *b)
-{
-    struct proc_struct *p = le2proc(a, lab6_run_pool);
-    struct proc_struct *q = le2proc(b, lab6_run_pool);
-    int32_t c = p->lab6_stride - q->lab6_stride;
-    if (c > 0) return 1;
-    else if (c == 0) return 0;
-    else return -1;
-}
-
 #define find_first_zero(addr) ({\
         int __res;\
         __asm__ __volatile__("cld\n"\
@@ -76,12 +57,6 @@ stride_init(struct run_queue *rq) {
         for (j = 0; j < MAX_PRIO; j++)
             list_init(&rq->array_buf[i].queue[j]);
     }
-#if USE_SKEW_HEAP
-    rq->lab6_run_pool = 0;
-#else
-    list_init(&rq->run_list);
-#endif
-    rq->proc_num = 0;
 }
 
 /*
