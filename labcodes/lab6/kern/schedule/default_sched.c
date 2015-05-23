@@ -83,8 +83,8 @@ stride_enqueue(struct run_queue *rq, struct proc_struct *proc) {
       * (3) set proc->rq pointer to rq
       * (4) increase rq->proc_num
       */
-    cprintf("  enqueue pid=%d, priority=%d\n", proc->pid, proc->lab6_priority);
-    proc->time_slice = rq->max_time_slice;
+    //cprintf("  enqueue pid=%d, priority=%d\n", proc->pid, proc->lab6_priority);
+    proc->time_slice = proc->lab6_priority;
     proc->rq = rq;
     if (proc->lab6_priority == 0) proc->lab6_priority = 1;
     rq->expired->nr_active++;
@@ -109,7 +109,7 @@ stride_dequeue(struct run_queue *rq, struct proc_struct *proc) {
       *         skew_heap_remove: remove a entry from skew_heap
       *         list_del_init: remove a entry from the  list
       */
-    cprintf("  dequeue pid=%d, priority=%d\n", proc->pid, proc->lab6_priority);
+    //cprintf("  dequeue pid=%d, priority=%d\n", proc->pid, proc->lab6_priority);
     rq->active->nr_active--;
     uint32_t priority = proc->lab6_priority;
     list_del(&proc->o1_sched_link);
@@ -145,7 +145,7 @@ stride_pick_next(struct run_queue *rq) {
     }
     int first_bit = sched_o1_find_first_bit(rq->active->bitmap);
     struct proc_struct *proc = le2proc(list_next(&rq->active->queue[first_bit]), o1_sched_link);
-    cprintf("  picked  pid=%d, priority=%d\n", proc->pid, proc->lab6_priority);
+    //cprintf("  picked  pid=%d, priority=%d\n", proc->pid, proc->lab6_priority);
     return proc;
 }
 
