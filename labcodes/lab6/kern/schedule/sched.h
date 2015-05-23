@@ -36,7 +36,16 @@ struct sched_class {
      */
 };
 
+enum {MAX_PRIO = 140, BITMAP_SIZE = (MAX_PRIO - 1) / sizeof(uint32_t)};
+struct prio_array {
+    int nr_active;
+    list_entry_t queue[MAX_PRIO];
+    uint32_t bitmap[BITMAP_SIZE];
+};
+
 struct run_queue {
+    struct prio_array array_buf[2];
+    struct prio_array *active, *expired;
     list_entry_t run_list;
     unsigned int proc_num;
     int max_time_slice;

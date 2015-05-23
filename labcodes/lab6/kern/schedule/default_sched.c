@@ -23,6 +23,19 @@ proc_stride_comp_f(void *a, void *b)
     else return -1;
 }
 
+static int
+sched_find_first_bit(uint32_t bitmap[BITMAP_SIZE]) {
+    return 0;
+}
+
+static void
+sched_o1_array_enqueue(struct proc_struct *proc, struct prio_array *arr) {
+    arr->nr_active++;
+    uint32_t priority = proc->lab6_priority;
+    arr->bitmap[priority / sizeof(uint32_t)] |= 1 << (sizeof(uint32_t) - 1 - priority % sizeof(uint32_t));
+    list_add(&arr->queue[priority], &proc->o1_sched_link);
+}
+
 /*
  * stride_init initializes the run-queue rq with correct assignment for
  * member variables, including:
@@ -41,6 +54,14 @@ stride_init(struct run_queue *rq) {
       * (2) init the run pool: rq->lab6_run_pool
       * (3) set number of process: rq->proc_num to 0       
       */
+    memset(rq->array_buf, 0, sizeof(rq->array_buf));
+    rq->active = &rq->array_buf[0];
+    rq->expired = &rq->array_buf[1];
+    int i, j;
+    for (i = 0; i < 2; i++) {
+        for (j = 0; j < MAX_PRIO; j++)
+            list_init(&rq->array_buf[i].queue[j]);
+    }
 #if USE_SKEW_HEAP
     rq->lab6_run_pool = 0;
 #else
@@ -73,6 +94,9 @@ stride_enqueue(struct run_queue *rq, struct proc_struct *proc) {
       * (3) set proc->rq pointer to rq
       * (4) increase rq->proc_num
       */
+    proc->time_slice = rq->max_time_slice;
+    proc->rq = rq;
+    sched_o1_array_enqueue(proc, rq->expired);
 #if USE_SKEW_HEAP
     rq->lab6_run_pool = skew_heap_insert(rq->lab6_run_pool, &(proc->lab6_run_pool), proc_stride_comp_f);
 #else
