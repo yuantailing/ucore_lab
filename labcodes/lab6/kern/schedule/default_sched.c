@@ -23,13 +23,31 @@ proc_stride_comp_f(void *a, void *b)
     else return -1;
 }
 
+#define find_first_zero(addr) ({\
+        int __res;\
+        __asm__ __volatile__("cld\n"\
+            "1:\tlodsl\n\t"\
+            "notl %%eax\n\t"\
+            "bsfl %%eax,%%edx\n\t"\
+            "je 2f\n\t"\
+            "addl %%edx,%%ecx\n\t"\
+            "jmp 3f\n"\
+            "2:\t addl $32,%%ecx\n\t"\
+            "cmpl $8192,%%ecx\n\t"\
+            "jl 1b\n"\
+            "3:"\
+            :"=c"(__res):"c"(0),"S"(addr));\
+        __res;})
+
 static int
 sched_o1_find_first_bit(uint32_t bitmap[BITMAP_SIZE]) {
-    int priority;
-    for (priority = 0; priority < MAX_PRIO; priority++)
-        if (bitmap[priority / 32] & (1 << 32 - 1 - priority % 32))
-            return priority;
-    return -1;
+    int i;
+    for (i = 0; i < BITMAP_SIZE; i++) {
+        if (bitmap[i]) {
+            int x = ~bitmap[i];
+            return i * 32 + 31 - find_first_zero(&x);
+        }
+    }
 }
 
 /*
