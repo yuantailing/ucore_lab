@@ -46,11 +46,7 @@ struct prio_array {
 struct run_queue {
     struct prio_array array_buf[2];
     struct prio_array *active, *expired;
-    list_entry_t run_list;
-    unsigned int proc_num;
     int max_time_slice;
-    // For LAB6 ONLY
-    skew_heap_entry_t *lab6_run_pool;
 };
 
 void sched_init(void);
